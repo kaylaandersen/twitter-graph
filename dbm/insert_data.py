@@ -6,6 +6,7 @@ db = neo4j.GraphDatabaseService('http://localhost:7474/db/data')
 
 # insert data
 # PASS note this is an example
+
 def insert_data():
     die_hard = db.create(
         node({"name": "Bruce Willis"}),
