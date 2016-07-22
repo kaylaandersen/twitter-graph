@@ -32,42 +32,26 @@ class TwitterAPI(object):
         self.get_api()
 
     def get_user(self, user_id=None, screen_name=None):
+        '''Retreives a single user'''
         return self.api.get_user(user_id=user_id, screen_name=screen_name)
 
-    def get_friends(user_id=None, screen_name=None):
-        tweepy.Cursor(api.friends)
+    def get_users(self):
+        pass
 
+    def get_friends(self, user_id=None, screen_name=None):
+        ids = []
+        cursor = api.api.friends_ids(user_id=user_id,
+                                      screen_name=screen_name,
+                                      cursor=-1)
+        return cursor
 
-
-# main
-json_file = 'galvanize_capstone1_token.json'
-api = TwitterAPI(json_file)
-donald = api.get_user(screen_name='realDonaldTrump')
-hillary = api.get_user(screen_name='HillaryClinton')
-
-
-k = keys['Galvanize Capstone 1']
-consumer_key, consumer_secret = k['consumer_key'], k['consumer_secret']
-access_token, access_token_secret = k['access_token'],
-                                    k['access_token_secret']
-
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-
-api = tweepy.API(auth)
-
-screen_name = 'realDonaldTrump'
-api = tweepy.API(auth)
-
-users = tweepy.Cursor(api.followers, screen_name=screen_name).items()
-users2 = tweepy.
-
-while True:
-    try:
-        user = next(users)
-    except tweepy.TweepError:
-        time.sleep(60*15)
-        user = next(users)
-    except StopIteration:
-        break
-    print "@" + user.screen_name
+    def friends_ids(self, user_id):
+    	"""
+    	https://dev.twitter.com/docs/api/1.1/get/friends/ids
+    	http://docs.tweepy.org/en/latest/api.html#API.friends_ids
+    	"""
+        friend_ids = []
+    	for chunk in tweepy.Cursor(self.api.friends_ids,
+                                   user_id=user_id, count=5000).pages():
+    		friend_ids.extend(chunk)
+        return friend_ids
