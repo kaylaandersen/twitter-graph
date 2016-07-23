@@ -35,23 +35,26 @@ class TwitterAPI(object):
         '''Retreives a single user'''
         return self.api.get_user(user_id=user_id, screen_name=screen_name)
 
-    def get_users(self):
-        pass
+    def get_users(self, user):
+        '''Retrieves users'''
+        users = tapi.api.lookup_users(user_ids=test)
 
-    def get_friends(self, user_id=None, screen_name=None):
-        ids = []
-        cursor = api.api.friends_ids(user_id=user_id,
-                                      screen_name=screen_name,
-                                      cursor=-1)
-        return cursor
 
-    def friends_ids(self, user_id):
-    	"""
+
+    def get_friends_ids(self, user_id):
+    	'''
     	https://dev.twitter.com/docs/api/1.1/get/friends/ids
     	http://docs.tweepy.org/en/latest/api.html#API.friends_ids
-    	"""
+    	'''
         friend_ids = []
     	for chunk in tweepy.Cursor(self.api.friends_ids,
                                    user_id=user_id, count=5000).pages():
     		friend_ids.extend(chunk)
         return friend_ids
+
+    def get_followers_ids(self, user_id):
+        follower_ids = []
+    	for chunk in tweepy.Cursor(self.api.friends_ids,
+                                   user_id=user_id, count=5000).pages():
+    		follower_ids.extend(chunk)
+        return follower_ids
