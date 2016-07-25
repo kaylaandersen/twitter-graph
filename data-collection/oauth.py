@@ -35,10 +35,9 @@ class TwitterAPI(object):
         '''Retreives a single user'''
         return self.api.get_user(user_id=user_id, screen_name=screen_name)
 
-    def get_users(self, user):
+    def get_users(self, user_ids):
         '''Retrieves users'''
-        users = tapi.api.lookup_users(user_ids=test)
-
+        users = tapi.api.lookup_users(user_ids=user_ids)
 
 
     def get_friends_ids(self, user_id):
