@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 import tweepy
@@ -23,25 +24,25 @@ class TwitterAPI(object):
     def get_api(self):
         self.auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret)
         self.auth.set_access_token(self.access_token, self.access_token_secret)
-        self.api = tweepy.API(self.auth)
+        self.api = tweepy.API(self.auth, wait_on_rate_limit=True,
+                              wait_on_rate_limit_notify=True)
         return self.api
 
     def next_token(self):
         self.app = self.apps.next()
         self.set_auth()
         self.get_api()
-
-    def request_timer(self):
-        #d = {'get_user': }
-        pass
+        print '/n SWITCHED TO TOKEN {}'.format(self.app)
 
     def get_user(self, user_id=None, screen_name=None):
         '''Retreives a single user'''
         return self.api.get_user(user_id=user_id, screen_name=screen_name)
+        self.test_rate_limit()
 
     def get_users(self, user_ids):
         '''Retrieves users'''
         users = self.api.lookup_users(user_ids=user_ids)
+        self.test_rate_limit()
 
     def get_friends_ids(self, user_id):
     	'''
@@ -49,20 +50,27 @@ class TwitterAPI(object):
     	http://docs.tweepy.org/en/latest/api.html#API.friends_ids
     	'''
         friend_ids = []
-        try:
-        	for chunk in tweepy.Cursor(self.api.friends_ids,
-                                       user_id=user_id, count=5000).pages():
-        		friend_ids.extend(chunk)
-        except:
-            pass
+    	for chunk in tweepy.Cursor(self.api.friends_ids,
+                                   user_id=user_id, count=5000).pages():
+    		friend_ids.extend(chunk)
+        self.test_rate_limit()
         return friend_ids
 
     def get_followers_ids(self, user_id):
         follower_ids = []
-        try:
-        	for chunk in tweepy.Cursor(self.api.friends_ids,
-                                       user_id=user_id, count=5000).pages():
-        		follower_ids.extend(chunk)
-        except:
-            pass
+    	for chunk in tweepy.Cursor(self.api.friends_ids,
+                                   user_id=user_id, count=5000).pages():
+    		follower_ids.extend(chunk)
+        self.test_rate_limit()
         return follower_ids
+
+    def test_rate_limit(self):
+        """
+        Tests whether the rate limit of the last request has been reached.
+        If it has, cycles to the next token.
+        """
+        #Get the number of remaining requests
+        remaining = int(self.api.last_response.getheader('x-rate-limit-remaining'))
+        #Check if we have reached the limit
+        if remaining == 0:
+            self.next_token()

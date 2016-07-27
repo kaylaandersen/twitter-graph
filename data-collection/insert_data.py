@@ -21,7 +21,7 @@ class TwitterGraph(object):
             print 'Unique id on Node User already exists'
 
     # Functions to add data to the database
-    def add_following(self, user_id, following_ids, source_name, source_degree):
+    def add_following(self, user_id, following_ids):
         '''Given a unique user id, adds the relationship for who they follow.
         Adds a User Node with the id if it doesn't exist.'''
         user = Node('User', id=user_id)
@@ -29,14 +29,13 @@ class TwitterGraph(object):
         rec = 1 # preserving the order of the following. 1 = most recent
         for fid in following_ids:
             user2 = Node('User', id=fid)
-            user2[source_name] = source_degree
             self.graph.merge(user2)
             self.graph.merge(Relationship(user, 'FOLLOWS', user2, rec=rec))
             rec += 1
-        user.following_added = True
+        user['following_added'] = True
         self.graph.push(user)
 
-    def add_followers(self, user_id, follower_ids, source_name, source_degree):
+    def add_followers(self, user_id, follower_ids):
         '''Given a unique user id, adds the relationship for follows them.
         Adds a User Node with the id if it doesn't exist.'''
         user = Node('User', id=user_id)
@@ -44,11 +43,10 @@ class TwitterGraph(object):
         rec = 1
         for fid in follower_ids:
             user2 = Node('User', id=fid)
-            user2[source_name] = source_degree
             self.graph.merge(user2)
             self.graph.merge(Relationship(user2, 'FOLLOWS', user, rec=rec))
             rec += 1
-        user.followers_added = True
+        user['followers_added'] = True
         self.graph.push(user)
 
     def add_user_properties(self, user):
@@ -86,10 +84,10 @@ class TwitterGraph(object):
         return clean
 
     # Functions to query database
-    def get_nodes_missing_props(self):
+    def get_nodes_missing_props(self, limit=100):
         '''Returns the first 100 ids of nodes without user properties'''
         selector = NodeSelector(self.graph)
-        selected = selector.select('User').where("_.screen_name IS NULL").limit(100)
+        selected = selector.select('User').where("_.screen_name IS NULL").limit(limit)
         return [s['id'] for s in selected]
 
     def get_nodes_missing_rels(self, rel='FOLLOWING', limit=1):
@@ -104,44 +102,54 @@ class TwitterGraph(object):
             # TO DO: flesh out the exception calling
             raise Exception
 
-def twitter_graph_walk(graph, tapi, source_sn, depth=3):
+def twitter_graph_walk(host_port, user, password, json_file, source_sn, depth=3):
     '''Iteratively gets the followers and folllowing users of a source user.
     Depth - how far to grow the graph'''
+    # connect to graph database
+    graph = TwitterGraph(host_port, user, password)
+    # connect to twitter API
+    tapi = oauth.TwitterAPI(json_file)
+    # initiate graph walk
     source_user = tapi.get_user(screen_name=source_sn)
     for deg in range(1, depth + 1):
+        print '/n**************************************************************'
+        print 'GRAPHING DEPTH {}'.format(deg)
         if deg == 1:
             # get user friends
             user_friends = tapi.get_friends_ids(source_user.id)
             # update database
-            graph.add_following(source_user.id, user_friends, 'd' + source_sn, deg)
+            graph.add_following(source_user.id, user_friends)
             # get user followers
             user_followers = tapi.get_followers_ids(source_user.id)
-            graph.add_followers(source_user.id, user_friends, 'd' + source_sn, deg)
+            graph.add_followers(source_user.id, user_friends)
+        else:
+            user_mfr = graph.get_nodes_missing_rels(rel='FOLLOWING')
+            while user_mfr:
+                user_mfr_friends = tapi.get_friends_ids(user_mfr)
+                graph.add_following(user_mfr, user_mfr_friends)
+                user_mfr = graph.get_nodes_missing_rels(rel='FOLLOWING')
+            print 'FILLED FRIENDS'
+            user_mfl = graph.get_nodes_missing_rels(rel='FOLLOWERS')
+            while user_mfl:
+                user_mfl_friends = tapi.get_friends_ids(user_mfl)
+                graph.add_following(user_mfl, user_mfl_friends)
+                user_mfl = graph.get_nodes_missing_rels(rel='FOLLOWERS')
+    print 'Finished graphing network!!!'
 
-def twitter_graph_fill(graph, tapi):
-    '''Hydrate the user node with user data'''
-    count = 0 # note this count should be temporary-- need to figure out the api calls
-    if count < 150:
-        users_to_hyd = graph.get_nodes_missing_props()
+def twitter_graph_fill(host_port, user, password, json_file):
+    # connect to graph database
+    graph = TwitterGraph(host_port, user, password)
+    # connect to twitter API
+    tapi = oauth.TwitterAPI(json_file)
+    # initiate hydration
+    users_to_hyd = graph.get_nodes_missing_props()
+    while users_to_hyd:
+        print 'Hydrating users...'
         users = tapi.api.lookup_users(user_ids=users_to_hyd)
         for user in users:
             graph.add_user_properties(user)
-        count += 1
-        print 100 * count
+        users_to_hyd = graph.get_nodes_missing_props()
+    print 'Finished Hydrating Users'
 
-
-
-
-
-if __name__ == '__main__':
-    # connect to network database
-    host_port = 'localhost:7474'
-    user = 'neo4j'
-    password = 'IYWcb1ar2'
-    graph = TwitterGraph(host_port, user, password)
-
-    # connect to twitter API
-    json_file = 'galvanize_capstone1_token.json'
-    tapi = oauth.TwitterAPI(json_file)
-    twitter_graph_walk(graph, tapi, 'BernieSanders', depth=1)
-    twitter_graph_fill(graph, tapi)
+#twitter_graph_walk(graph, tapi, 'BernieSanders', depth=3)
+#twitter_graph_fill(graph, tapi)
