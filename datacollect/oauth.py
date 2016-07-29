@@ -49,20 +49,18 @@ class TwitterAPI(object):
     	https://dev.twitter.com/docs/api/1.1/get/friends/ids
     	http://docs.tweepy.org/en/latest/api.html#API.friends_ids
     	'''
-        friend_ids = []
     	for chunk in tweepy.Cursor(self.api.friends_ids,
                                    user_id=user_id, count=5000).pages():
-    		friend_ids.extend(chunk)
+    		yield(chunk)
         self.test_rate_limit('friends', '/friends/ids')
-        return friend_ids
+
 
     def get_followers_ids(self, user_id):
-        follower_ids = []
+        """Generator returns pages of user ids"""
     	for chunk in tweepy.Cursor(self.api.followers_ids,
                                    user_id=user_id, count=5000).pages():
-    		follower_ids.extend(chunk)
+    		yield(chunk)
         self.test_rate_limit('followers', '/followers/ids')
-        return follower_ids
 
     def test_rate_limit(self, resources, call_name):
         """
