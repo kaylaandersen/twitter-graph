@@ -100,3 +100,4 @@ class TwitterGraph(object):
         else:
             # TO DO: flesh out the exception calling
             raise Exception
+        return [s['id'] for s in selected]

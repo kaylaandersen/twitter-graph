@@ -17,6 +17,7 @@ def tgdb_walk(host_port, user, password, json_file, rel, source_sn=None):
         if rel == 'FOLLOWING':
             user_friends = tapi.get_friends_ids(user)
             graph.add_following(user, user_friends)
+            print 'added friends'
         elif rel == 'FOLLOWERS':
             print 'waiting on followers'
             user_followers = tapi.get_followers_ids(user)
