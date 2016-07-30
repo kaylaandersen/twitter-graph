@@ -8,7 +8,7 @@ def twitter_graph_fill(host_port, user, password, json_file):
     # initiate hydration
     users_to_hyd = graph.get_nodes_missing_props()
     while users_to_hyd:
-        users = tapi.api.lookup_users(user_ids=users_to_hyd)
+        users = tapi.get_users(user_ids=users_to_hyd)
         for user in users:
             graph.add_user_properties(user)
         users_to_hyd = graph.get_nodes_missing_props()

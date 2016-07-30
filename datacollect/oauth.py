@@ -42,6 +42,7 @@ class TwitterAPI(object):
     def get_users(self, user_ids):
         '''Retrieves users'''
         users = self.api.lookup_users(user_ids=user_ids)
+        return users
         self.test_rate_limit('users', '/users/lookup')
 
     def get_friends_ids(self, user_id):
