@@ -20,12 +20,12 @@ class TwitterGraph(object):
             print 'Unique id on Node User already exists'
 
     # Functions to add data to the database
-    def add_following(self, user_id, following_ids):
+    def add_following(self, user_id, following_ids, rec_count):
         '''Given a unique user id, adds the relationship for who they follow.
         Adds a User Node with the id if it doesn't exist.'''
         user = Node('User', id=user_id)
         self.graph.merge(user) # important to merge before doing anything
-        rec = 1 # preserving the order of the following. 1 = most recent
+        rec = 1 + rec_count # preserving the order of the following. 1 = most recent
         for fid in following_ids:
             user2 = Node('User', id=fid)
             self.graph.merge(user2)
@@ -34,12 +34,12 @@ class TwitterGraph(object):
         user['following_added'] = True
         self.graph.push(user)
 
-    def add_followers(self, user_id, follower_ids):
+    def add_followers(self, user_id, follower_ids, rec_count):
         '''Given a unique user id, adds the relationship for follows them.
         Adds a User Node with the id if it doesn't exist.'''
         user = Node('User', id=user_id)
         self.graph.merge(user)
-        rec = 1
+        rec = 1 + rec_count
         for fid in follower_ids:
             user2 = Node('User', id=fid)
             self.graph.merge(user2)

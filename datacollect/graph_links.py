@@ -17,16 +17,19 @@ def tgdb_walk(host_port, user, password, json_file, rel, source_sn=None):
     while user_id:
         if rel == 'FOLLOWING':
             user_friends = tapi.get_friends_ids(user_id)
+            count = 0
             for friend_chunk in user_friends:
-                graph.add_following(user_id, friend_chunk)
-            print 'added friends'
+                graph.add_following(user_id, friend_chunk, count)
+                count += len(friend_chunk)
+            print 'Added {} friends'.format(count)
         elif rel == 'FOLLOWERS':
             print 'waiting on followers'
+            count = 0
             user_followers = tapi.get_followers_ids(user_id)
             for follower_chunk in user_followers:
-                print 'adding followers...'
-                graph.add_followers(user_id, follower_chunk)
-                time.sleep(180)
+                graph.add_followers(user_id, follower_chunk, count)
+                count += len(follower_chunk)
+                print 'Added {} followers'.format(count)
         else:
             print "what"
         # don't conitnue to iterate if this is the source user
