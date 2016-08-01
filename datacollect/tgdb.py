@@ -65,7 +65,7 @@ class TwitterGraph(object):
             # bad user id
             user_id = user['user_id']
             error = user['error']
-            existing_user = Node('User', id=user)
+            existing_user = Node('User', id=user_id)
             existing_user['screen_name'] = 'INVALID'
             existing_user['error'] = error
             print 'Found invalid user id'
