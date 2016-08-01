@@ -112,3 +112,11 @@ class TwitterGraph(object):
             # TO DO: flesh out the exception calling
             raise Exception
         return [s['id'] for s in selected]
+
+    def get_nodes_missing_rels_params(self, rel='FOLLOWING', limit=1):
+        cypherq = """MATCH (n:User)-[r:FOLLOWS]->(m:User)
+                                     WHERE n.followers_count > 1000
+                                     AND m.screen_name = 'BernieSanders'
+                                     RETURN n.id
+                                     LIMIT 180;"""
+        return self.graph.run(cypherq).data()
