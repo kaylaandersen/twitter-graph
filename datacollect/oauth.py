@@ -40,8 +40,19 @@ class TwitterAPI(object):
         return self.api.get_user(user_id=user_id, screen_name=screen_name)
 
     def get_users(self, user_ids):
-        '''Retrieves users'''
-        users = self.api.lookup_users(user_ids=user_ids)
+        '''Retrieves users. Reverts to get user'''
+        try:
+            users = self.api.lookup_users(user_ids=user_ids)
+        except:
+            print 'Bad user id in batch... getting one-by-one'
+            # grab user one-by-one if there is a bad id in the batch
+            users = []
+            for user_id in user_ids:
+                try:
+                    user = self.get_user(user_id)
+                except:
+                    user = user_id
+                users.append(user)
         self.test_rate_limit('users', '/users/lookup')
         return users
 
