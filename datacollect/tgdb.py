@@ -51,7 +51,8 @@ class TwitterGraph(object):
     def add_user_properties(self, user):
         '''Given a unique user id, adds properties to the existing user Node'''
         try:
-            existing_user = Node('User', id=user.id)
+            user_id = user.id
+            existing_user = Node('User', id=user_id)
             clean_prop_dict = self.__clean_user_dict(user.__dict__)
             self.graph.merge(existing_user)
             for k, v in clean_prop_dict.iteritems():
@@ -62,8 +63,11 @@ class TwitterGraph(object):
                 existing_user.add_label('Verified')
         except:
             # bad user id
+            user_id = user['user_id']
+            error = user['error']
             existing_user = Node('User', id=user)
             existing_user['screen_name'] = 'INVALID'
+            existing_user['error'] = error
             print 'Found invalid user id'
         self.graph.push(existing_user)
 
