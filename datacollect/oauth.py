@@ -36,32 +36,32 @@ class TwitterAPI(object):
 
     def get_user(self, user_id=None, screen_name=None):
         '''Retreives a single user'''
-        return self.api.get_user(user_id=user_id, screen_name=screen_name)
         self.test_rate_limit('users', '/users/show/:id')
+        return self.api.get_user(user_id=user_id, screen_name=screen_name)
 
     def get_users(self, user_ids):
         '''Retrieves users'''
         users = self.api.lookup_users(user_ids=user_ids)
-        return users
         self.test_rate_limit('users', '/users/lookup')
+        return users
 
     def get_friends_ids(self, user_id):
     	'''
     	https://dev.twitter.com/docs/api/1.1/get/friends/ids
     	http://docs.tweepy.org/en/latest/api.html#API.friends_ids
     	'''
+        self.test_rate_limit('friends', '/friends/ids')
     	for chunk in tweepy.Cursor(self.api.friends_ids,
                                    user_id=user_id, count=5000).pages():
     		yield(chunk)
-        self.test_rate_limit('friends', '/friends/ids')
 
 
     def get_followers_ids(self, user_id):
         """Generator returns pages of user ids"""
+        self.test_rate_limit('followers', '/followers/ids')
     	for chunk in tweepy.Cursor(self.api.followers_ids,
                                    user_id=user_id, count=5000).pages():
     		yield(chunk)
-        self.test_rate_limit('followers', '/followers/ids')
 
     def test_rate_limit(self, resources, call_name):
         """
