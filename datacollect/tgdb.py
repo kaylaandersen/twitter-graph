@@ -62,7 +62,7 @@ class TwitterGraph(object):
                 existing_user.add_label('Verified')
         except:
             # bad user id
-            existing_user = Node('User', id=user.id)
+            existing_user = Node('User', id=user)
             existing_user['screen_name'] = 'INVALID'
             print 'Found invalid user id'
         self.graph.push(existing_user)
