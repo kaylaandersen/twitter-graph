@@ -66,6 +66,7 @@ class TwitterGraph(object):
             user_id = user['user_id']
             error = user['error']
             existing_user = Node('User', id=user_id)
+            self.graph.merge(existing_user)
             existing_user['screen_name'] = 'INVALID'
             existing_user['error'] = error
             print 'Found invalid user id'
