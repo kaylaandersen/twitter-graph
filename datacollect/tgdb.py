@@ -133,8 +133,8 @@ class TwitterGraph(object):
 
     def get_nodes_missing_rels_bfriends(self, rel='FOLLOWING'):
         cypherq = """MATCH (n:User)<-[r:FOLLOWS]-(m:User)
+                                     WHERE m.screen_name = 'BernieSanders'
                                      AND NOT EXISTS(n.following_added)
-                                     AND m.screen_name = 'BernieSanders'
                                      RETURN n.id
                                      LIMIT 100;"""
         return [i['n.id'] for i in self.graph.run(cypherq).data()]
