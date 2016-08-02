@@ -101,6 +101,16 @@ class TwitterGraph(object):
         selected = selector.select('User').where("_.screen_name IS NULL").limit(limit)
         return [s['id'] for s in selected]
 
+    def get_nodes_missing_props_follb(self, limit=100):
+        cypherq = """MATCH (n)-[r:FOLLOWS]->(m)
+                     WHERE m.screen_name = 'BernieSanders'
+                     AND NOT EXISTS(n.screen_name)
+                     RETURN n.id
+                     LIMIT 100;"""
+        return [i['n.id'] for i in self.graph.run(cypherq).data()]
+
+    def get_nodes_missing_props(self, )
+
     def get_nodes_missing_rels(self, rel='FOLLOWING', limit=1):
         '''Returns ids missing the follower or following relationships.
         Valid inputs for rel is FOLLOWING or FOLLOWERS'''

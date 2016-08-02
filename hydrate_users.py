@@ -6,7 +6,8 @@ def twitter_graph_fill(host_port, user, password, json_file):
     # connect to twitter API
     tapi = oauth.TwitterAPI(json_file)
     # initiate hydration
-    users_to_hyd = graph.get_nodes_missing_props()
+    #users_to_hyd = graph.get_nodes_missing_props()
+    users_to_hyd = graph.get_nodes_missing_props_follb()
     while users_to_hyd:
         users = tapi.get_users(user_ids=users_to_hyd)
         for user in users:
