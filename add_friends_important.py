@@ -21,9 +21,10 @@ if __name__ == '__main__':
                     graph.add_following(user_id, friend_chunk, count)
                     count += len(friend_chunk)
                 print 'Added {} friends'.format(count)
-            except tweep.TweepError as e:
+            except tweepy.TweepError as e:
                 # some may not authorize you to get this
                 error = e.args[0][0]['message']
+                print error
                 user = Node('User', id=user_id)
                 graph.graph.merge(node)
                 user['followers_added'] = error
