@@ -26,7 +26,7 @@ if __name__ == '__main__':
                 error = e.args[0]
                 print error
                 user = Node('User', id=user_id)
-                graph.graph.merge(node)
+                graph.graph.merge(user)
                 user['followers_added'] = error
                 graph.graph.push(user)
 
