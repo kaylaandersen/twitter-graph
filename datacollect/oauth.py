@@ -36,32 +36,45 @@ class TwitterAPI(object):
 
     def get_user(self, user_id=None, screen_name=None):
         '''Retreives a single user'''
-        return self.api.get_user(user_id=user_id, screen_name=screen_name)
         self.test_rate_limit('users', '/users/show/:id')
+        return self.api.get_user(user_id=user_id, screen_name=screen_name)
 
     def get_users(self, user_ids):
-        '''Retrieves users'''
-        users = self.api.lookup_users(user_ids=user_ids)
-        return users
+        '''Retrieves users. Reverts to get user'''
         self.test_rate_limit('users', '/users/lookup')
+        try:
+            users = self.api.lookup_users(user_ids=user_ids)
+        except tweepy.TweepError as e:
+            print 'Bad user id in batch... getting one-by-one'
+            # grab user one-by-one if there is a bad id in the batch
+            users = []
+            for user_id in user_ids:
+                try:
+                    user = self.get_user(user_id=user_id)
+                except tweepy.TweepError as e:
+                    print 'Bad User: ', e.reason
+                    user = {'user_id': user_id,
+                            'error': e.args[0][0]['message']}
+                users.append(user)
+        return users
 
     def get_friends_ids(self, user_id):
     	'''
     	https://dev.twitter.com/docs/api/1.1/get/friends/ids
     	http://docs.tweepy.org/en/latest/api.html#API.friends_ids
     	'''
+        self.test_rate_limit('friends', '/friends/ids')
     	for chunk in tweepy.Cursor(self.api.friends_ids,
                                    user_id=user_id, count=5000).pages():
     		yield(chunk)
-        self.test_rate_limit('friends', '/friends/ids')
 
 
     def get_followers_ids(self, user_id):
         """Generator returns pages of user ids"""
+        self.test_rate_limit('followers', '/followers/ids')
     	for chunk in tweepy.Cursor(self.api.followers_ids,
                                    user_id=user_id, count=5000).pages():
     		yield(chunk)
-        self.test_rate_limit('followers', '/followers/ids')
 
     def test_rate_limit(self, resources, call_name):
         """
@@ -73,5 +86,5 @@ class TwitterAPI(object):
         rls = self.api.rate_limit_status(resources=resources)
         remaining = rls['resources'][resources][call_name]['remaining']
         #Check if we have reached the limit
-        if remaining == 0:
+        if remaining == 1:
             self.next_token()

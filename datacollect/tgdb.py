@@ -51,15 +51,26 @@ class TwitterGraph(object):
 
     def add_user_properties(self, user):
         '''Given a unique user id, adds properties to the existing user Node'''
-        existing_user = Node('User', id=user.id)
-        clean_prop_dict = self.__clean_user_dict(user.__dict__)
-        self.graph.merge(existing_user)
-        for k, v in clean_prop_dict.iteritems():
-            existing_user[k] = v
-        # add additional label to verified accounts
-        if clean_prop_dict['verified']:
-            print True
-            existing_user.add_label('Verified')
+        try:
+            user_id = user.id
+            existing_user = Node('User', id=user_id)
+            clean_prop_dict = self.__clean_user_dict(user.__dict__)
+            self.graph.merge(existing_user)
+            for k, v in clean_prop_dict.iteritems():
+                existing_user[k] = v
+            # add additional label to verified accounts
+            if clean_prop_dict['verified']:
+                print True
+                existing_user.add_label('Verified')
+        except:
+            # bad user id
+            user_id = user['user_id']
+            error = user['error']
+            existing_user = Node('User', id=user_id)
+            self.graph.merge(existing_user)
+            existing_user['screen_name'] = 'INVALID'
+            existing_user['error'] = error
+            print 'Found invalid user id'
         self.graph.push(existing_user)
 
     def __clean_user_dict(self, user_prop_dict):
@@ -102,3 +113,12 @@ class TwitterGraph(object):
             # TO DO: flesh out the exception calling
             raise Exception
         return [s['id'] for s in selected]
+
+    def get_nodes_missing_rels_params(self, rel='FOLLOWING'):
+        cypherq = """MATCH (n:User)-[r:FOLLOWS]->(m:User)
+                                     WHERE n.followers_count >= 1000
+                                     AND NOT EXISTS(n.following_added)
+                                     AND m.screen_name = 'BernieSanders'
+                                     RETURN n.id
+                                     LIMIT 150;"""
+        return [i['n.id'] for i in self.graph.run(cypherq).data()]

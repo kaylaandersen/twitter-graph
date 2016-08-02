@@ -9,8 +9,12 @@ def tgdb_walk(host_port, user, password, json_file, rel, source_sn=None):
     if source_sn:
         user_id = tapi.get_user(screen_name=source_sn).id # get source user id
     else:
-        # get first user node missing relationship
-        user_id = graph.get_nodes_missing_rels(rel)
+        try:
+            # get first user node missing relationship
+            user_id = graph.get_nodes_missing_rels(rel)[0]
+        except:
+            print 'No nodes missing relation {}'.format(rel)
+            user_id = None
     # add links for the given user and relationship
     # if there is a source user screen name, only pass once
     # otherwise, will add links for all the users missing relationship
@@ -36,4 +40,8 @@ def tgdb_walk(host_port, user, password, json_file, rel, source_sn=None):
         if source_sn:
             break
         else:
-            user_id = graph.get_nodes_missing_rels(rel)
+            try:
+                user_id = graph.get_nodes_missing_rels(rel)[0]
+            except:
+                print 'No nodes missing relation {}'.format(rel)
+                user_id = None
