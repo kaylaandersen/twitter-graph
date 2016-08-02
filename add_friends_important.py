@@ -23,7 +23,7 @@ if __name__ == '__main__':
                 print 'Added {} friends'.format(count)
             except tweepy.TweepError as e:
                 # some may not authorize you to get this
-                error = e.args[0][0]['message']
+                error = e.args[0]
                 print error
                 user = Node('User', id=user_id)
                 graph.graph.merge(node)
