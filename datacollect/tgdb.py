@@ -25,7 +25,8 @@ class TwitterGraph(object):
         Adds a User Node with the id if it doesn't exist.'''
         user = Node('User', id=user_id)
         self.graph.merge(user) # important to merge before doing anything
-        rec = 1 + rec_count # preserving the order of the following. 1 = most recent
+        rec = 1 + rec_count
+        b1a# preserving the order of the following. 1 = most recent
         for fid in following_ids:
             user2 = Node('User', id=fid)
             self.graph.merge(user2)
