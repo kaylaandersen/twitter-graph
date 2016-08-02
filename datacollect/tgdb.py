@@ -109,8 +109,6 @@ class TwitterGraph(object):
                      LIMIT 100;"""
         return [i['n.id'] for i in self.graph.run(cypherq).data()]
 
-    def get_nodes_missing_props(self, )
-
     def get_nodes_missing_rels(self, rel='FOLLOWING', limit=1):
         '''Returns ids missing the follower or following relationships.
         Valid inputs for rel is FOLLOWING or FOLLOWERS'''
