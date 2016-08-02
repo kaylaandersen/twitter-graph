@@ -1,4 +1,6 @@
 from datacollect import oauth, tgdb
+import tweepy
+from py2neo import Node
 
 if __name__ == '__main__':
     host_port = 'localhost'
@@ -12,12 +14,21 @@ if __name__ == '__main__':
     users_missing_rel = graph.get_nodes_missing_rels_params()
     while users_missing_rel:
         for user_id in users_missing_rel:
-            user_friends = tapi.get_friends_ids(user_id)
-            count = 0
-            for friend_chunk in user_friends:
-                graph.add_following(user_id, friend_chunk, count)
-                count += len(friend_chunk)
-            print 'Added {} friends'.format(count)
+            try:
+                user_friends = tapi.get_friends_ids(user_id)
+                count = 0
+                for friend_chunk in user_friends:
+                    graph.add_following(user_id, friend_chunk, count)
+                    count += len(friend_chunk)
+                print 'Added {} friends'.format(count)
+            except tweep.TweepError as e:
+                # some may not authorize you to get this
+                error = e.args[0][0]['message']}
+                user = Node('User', id=user_id)
+                graph.graph.merge(node)
+                user['followers_added'] = error
+                graph.graph.push(user)
+
         try:
             users_missing_rel = graph.get_nodes_missing_rels_params()
         except:
