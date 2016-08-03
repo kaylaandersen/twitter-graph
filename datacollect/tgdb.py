@@ -145,4 +145,4 @@ class TwitterGraph(object):
                                      AND NOT EXISTS(n.following_added)
                                      RETURN n.id
                                      LIMIT 500;"""
-        return [i['n.id'] for i in self.graph.run(cypherq).data()[400:]]
+        return [i['n.id'] for i in self.graph.run(cypherq).data()[-100:]
